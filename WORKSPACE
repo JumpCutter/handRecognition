@@ -57,13 +57,13 @@ http_archive(
     ],
 )
 
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
 # glog
-http_archive(
+git_repository(
     name = "com_github_glog_glog",
-    url = "https://github.com/google/glog/archive/v0.3.5.zip",
-    sha256 = "267103f8a1e9578978aa1dc256001e6529ef593e5aea38193d31c2872ee025e8",
-    strip_prefix = "glog-0.3.5",
-    build_file = "@//third_party:glog.BUILD",
+    commit = "5c576f78c49b28d89b23fbb1fc80f54c879ec02e",
+    remote = "https://github.com/google/glog",
 )
 
 # libyuv

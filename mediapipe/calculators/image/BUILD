@@ -341,7 +341,7 @@ cc_library(
         "//mediapipe:apple": [
             "-x objective-c++",
         ],
-        "//conditions:default": [],
+        "//conditions:default": ["-latomic"],
     }),
     linkopts = select({
         "//mediapipe:apple": [

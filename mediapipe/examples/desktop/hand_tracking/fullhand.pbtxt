@@ -1,0 +1,23 @@
+input_stream: "IMAGE:input_video"
+
+output_stream: "DETECTIONS:palm_detections"
+output_stream: "NORM_RECT:hand_rect"
+output_stream: "LANDMARKS:hand_landmarks"
+output_stream: "NORM_RECT:hand_rect_for_next_frame"
+output_stream: "PRESENCE:hand_presence"
+
+node {
+    calculator: "HandDetectionSubgraph"
+    input_stream: "input_video"
+    output_stream: "palm_detections"
+    output_stream: "hand_rect"
+}
+
+node {
+  calculator: "HandLandmarkSubgraph"
+  input_stream: "input_video"
+  input_stream: "hand_rect"
+  output_stream: "hand_landmarks"
+  output_stream: "hand_rect_for_next_frame"
+  output_stream: "hand_presence"
+}
