@@ -11,8 +11,8 @@ output_stream: "NORM_RECT:hand_rect_from_palm_detections"
 # resulting in potential letterboxing in the transformed image.
 node: {
   calculator: "ImageTransformationCalculator"
-  input_stream: "IMAGE_GPU:input_video"
-  output_stream: "IMAGE_GPU:transformed_input_video"
+  input_stream: "IMAGE:input_video"
+  output_stream: "IMAGE:transformed_input_video"
   output_stream: "LETTERBOX_PADDING:letterbox_padding"
   node_options: {
     [type.googleapis.com/mediapipe.ImageTransformationCalculatorOptions] {
@@ -30,7 +30,7 @@ node {
   output_side_packet: "opresolver"
   node_options: {
     [type.googleapis.com/mediapipe.TfLiteCustomOpResolverCalculatorOptions] {
-      use_gpu: true
+      use_gpu: false
     }
   }
 }
@@ -39,8 +39,8 @@ node {
 # TfLiteTensor.
 node {
   calculator: "TfLiteConverterCalculator"
-  input_stream: "IMAGE_GPU:transformed_input_video"
-  output_stream: "TENSORS_GPU:image_tensor"
+  input_stream: "IMAGE:transformed_input_video"
+  output_stream: "TENSORS:image_tensor"
 }
 
 # Runs a TensorFlow Lite model on GPU that takes an image tensor and outputs a
@@ -48,13 +48,13 @@ node {
 # scores.
 node {
   calculator: "TfLiteInferenceCalculator"
-  input_stream: "TENSORS_GPU:image_tensor"
+  input_stream: "TENSORS:image_tensor"
   output_stream: "TENSORS:detection_tensors"
   input_side_packet: "CUSTOM_OP_RESOLVER:opresolver"
   node_options: {
     [type.googleapis.com/mediapipe.TfLiteInferenceCalculatorOptions] {
-      model_path: "palm_detection.tflite"
-      use_gpu: true
+      model_path: "mediapipe/models/palm_detection.tflite"
+      use_gpu: false
     }
   }
 }
@@ -137,7 +137,7 @@ node {
   output_stream: "labeled_detections"
   node_options: {
     [type.googleapis.com/mediapipe.DetectionLabelIdToTextCalculatorOptions] {
-      label_map_path: "palm_detection_labelmap.txt"
+      label_map_path: "mediapipe/models/palm_detection_labelmap.txt"
     }
   }
 }
@@ -156,7 +156,7 @@ node {
 # Extracts image size from the input images.
 node {
   calculator: "ImagePropertiesCalculator"
-  input_stream: "IMAGE_GPU:input_video"
+  input_stream: "IMAGE:input_video"
   output_stream: "SIZE:image_size"
 }
 

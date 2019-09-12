@@ -1,5 +1,0 @@
-"\n@\022\025HandDetectionSubgraph\032\013input_video\"\017palm_detections\"\tha"
-"nd_rect\ng\022\024HandLandmarkSubgraph\032\013input_video\032\thand_rect\"\016"
-"hand_landmarks\"\030hand_rect_for_next_frame\"\rhand_presenceR\021IMAGE:input_"
-"videoz\032DETECTIONS:palm_detectionsz\023NORM_RECT:hand_rectz\030LANDMARKS:han"
-"d_landmarksz\"NORM_RECT:hand_rect_for_next_framez\026PRESENCE:hand_presence"

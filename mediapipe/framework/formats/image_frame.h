@@ -90,7 +90,7 @@ class ImageFrame {
   // Returns depth of each channel in bytes for an ImageFormat.
   static int ByteDepthForFormat(ImageFormat::Format format);
 
-  ImageFrame(const ImageFrame&) = delete;
+  ImageFrame(const ImageFrame& frame) { this->CopyFrom(frame, 1); }
   ImageFrame& operator=(const ImageFrame&) = delete;
   // Creates an empty ImageFrame. It will need to be initialized by some other
   // means.
