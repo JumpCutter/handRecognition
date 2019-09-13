@@ -150,16 +150,15 @@ bool isThumbsDown(std::vector<NormalizedLandmark> ls){
 }
 
 bool isOkHand(std::vector<NormalizedLandmark> ls){
-    bool pos = !isFingerExtended(ls, 0) && \
-               !isFingerFolded(ls, 0) && \
-               !isFingerExtended(ls, 1) && \
+    bool pos = !isFingerFolded(ls, 0) && \
                !isFingerFolded(ls, 1) && \
                isFingerExtended(ls, 2) && \
                isFingerExtended(ls, 3) && \
                isFingerExtended(ls, 4);
-    double pinkyAngle = getAngle(ls[19], ls[20]);
+    double pinkyAngle = mod(getAngle(ls[19], ls[20]), 2*PI);
     bool point = 3*PI/2-THRESHOLD < pinkyAngle && pinkyAngle < 3*PI/2+THRESHOLD;
-    bool close = getDistance(ls[4], ls[8]) < getDistance(ls[5], ls[8]);
+    bool close = getDistance(ls[4], ls[8]) < getDistance(ls[9], ls[11]);
+    std::cout << pos << point << close << std::endl;
     return pos && point && close;
 }
 
@@ -191,9 +190,9 @@ int getIndex(std::deque<int> deq, int x){
     //ASSIGN_OR_RETURN(OutputStreamPoller rectpoller,
     //                  graph.AddOutputStreamPoller(
     //                     "hand_rect"));
-    //ASSIGN_OR_RETURN(OutputStreamPoller poller,
-    //                  graph.AddOutputStreamPoller(
-    //                     "output_image"));
+    ASSIGN_OR_RETURN(OutputStreamPoller poller,
+                      graph.AddOutputStreamPoller(
+                         "output_image"));
     RETURN_IF_ERROR(graph.StartRun({}));
     
     cv::VideoCapture video = cv::VideoCapture(filename);
@@ -238,18 +237,18 @@ int getIndex(std::deque<int> deq, int x){
             switch (gesture){
                 case 1: std::cerr << time << "up" << std::endl; break;
                 case -1: std::cerr << time << "dn" << std::endl; break;
-                //default: std::cerr << time << "no" << std::endl; break;
+                default: std::cerr << time << "no" << std::endl; break;
             }
             j++;
         }
-        /*if(poller.Next(&packet)){
+        if(poller.Next(&packet)){
             ImageFrame img = packet.Get<ImageFrame>();
             int time = packet.Timestamp().Value();
             char fname[256];
             sprintf(fname, format, time);
             cv::Mat mat = formats::MatView(&img);
             cv::imwrite(fname, mat);
-        }*/
+        }
 
     }
     RETURN_IF_ERROR(graph.CloseInputStream("input_image"));

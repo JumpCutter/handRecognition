@@ -118,12 +118,12 @@ node {
 
 # Subgraph that renders annotations and overlays them on top of the input
 # images (see renderer_gpu.pbtxt).
-#node {
-#  calculator: "RendererSubgraph"
-#  input_stream: "IMAGE:input_image"
-#  input_stream: "LANDMARKS:hand_landmarks"
-#  input_stream: "NORM_RECT:hand_rect"
-#  input_stream: "DETECTIONS:palm_detections"
-#  output_stream: "IMAGE:output_image"
-#}
+node {
+  calculator: "RendererSubgraph"
+  input_stream: "IMAGE:input_image"
+  input_stream: "LANDMARKS:hand_landmarks"
+  input_stream: "NORM_RECT:hand_rect"
+  input_stream: "DETECTIONS:palm_detections"
+  output_stream: "IMAGE:output_image"
+}
 )";

@@ -14,8 +14,8 @@ while read fr event gest; do
         frame=$fr
     elif [ $gest = 'up' ]; then
         #echo $frame $fr $fps
-        s=$(echo "($frame-10)/$fps" | bc -l | sed 's/^\./0\./')
-        e=$(echo "($fr   -10)/$fps" | bc -l | sed 's/^\./0\./')
+        s=$(echo "$frame/$fps" | bc -l | sed 's/^\./0\./')
+        e=$(echo "$fr   /$fps" | bc -l | sed 's/^\./0\./')
         #echo $s $e
         ffmpeg -y -i $1 -ss $s -to $e -c copy tmpvids/$vidname.$ext 2>/dev/null
         echo "file 'tmpvids/$vidname.$ext'" >> filelist.txt
