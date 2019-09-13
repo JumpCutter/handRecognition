@@ -180,7 +180,7 @@ int getIndex(std::deque<int> deq, int x){
 ::mediapipe::Status DetectHandGestures(char* filename) {
     CalculatorGraphConfig config = ParseTextProtoOrDie<CalculatorGraphConfig>(graphcfg);
     CalculatorGraph graph;
-    RETURN_IF_ERROR(graph.Initialize(config));
+    MP_RETURN_IF_ERROR(graph.Initialize(config));
     ASSIGN_OR_RETURN(OutputStreamPoller lpoller,
                       graph.AddOutputStreamPoller(
                          "hand_landmarks"));
@@ -193,7 +193,7 @@ int getIndex(std::deque<int> deq, int x){
     ASSIGN_OR_RETURN(OutputStreamPoller poller,
                       graph.AddOutputStreamPoller(
                          "output_image"));
-    RETURN_IF_ERROR(graph.StartRun({}));
+    MP_RETURN_IF_ERROR(graph.StartRun({}));
     
     cv::VideoCapture video = cv::VideoCapture(filename);
     int i=0, j=0;
@@ -210,7 +210,7 @@ int getIndex(std::deque<int> deq, int x){
             ImageFrame::kDefaultAlignmentBoundary);
         cv::Mat input_frame_mat = mediapipe::formats::MatView(image_frame.get());
         inmatrix.copyTo(input_frame_mat);
-        RETURN_IF_ERROR(graph.AddPacketToInputStream(
+        MP_RETURN_IF_ERROR(graph.AddPacketToInputStream(
             "input_image", Adopt(image_frame.release()).At(Timestamp(i))));
         
         if(lpoller.Next(&packet)){
@@ -251,7 +251,7 @@ int getIndex(std::deque<int> deq, int x){
         }
 
     }
-    RETURN_IF_ERROR(graph.CloseInputStream("input_image"));
+    MP_RETURN_IF_ERROR(graph.CloseInputStream("input_image"));
     /*while (j<i && poller.Next(&packet)) {
         /*std::vector<NormalizedLandmark> landmarks = packet.Get<std::vector<NormalizedLandmark>>();
         std::cout << packet.Timestamp().Value() << ' ';
