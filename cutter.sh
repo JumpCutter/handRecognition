@@ -1,17 +1,26 @@
 #!/usr/bin/env sh
 
-cutstr=''
-first=1
+ext=${1##*.}
+vidname=0
 frame=0
-./handrecog $1 | while read -r fr event gest; do
-    if [ $event == 'end' ]; then
+fps=`ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p"`
+
+mkdir -p tmpvids
+echo "" > filelist.txt
+
+./handrecog $1 | \
+while read fr event gest; do
+    if [ $event = 'end' ]; then
         frame=$fr
-    elif [ $gest == 'up' ]; then
-        if [ first == 0]; then
-            cutstr=$cutstr'+'
-        fi
-        first=0
-        $cutstr=$cutstr"gt(n\,$frame)*lt(n\,$fr)"
+    elif [ $gest = 'up' ]; then
+        #echo $frame $fr $fps
+        s=$(echo "($frame-10)/$fps" | bc -l | sed 's/^\./0\./')
+        e=$(echo "($fr   -10)/$fps" | bc -l | sed 's/^\./0\./')
+        #echo $s $e
+        ffmpeg -y -i $1 -ss $s -to $e -c copy tmpvids/$vidname.$ext 2>/dev/null
+        echo "file 'tmpvids/$vidname.$ext'" >> filelist.txt
+        vidname=$((vidname+1))
     fi
 done
-ffmpeg -i $1 -vf select="$cutstr" ${2:-out.${1:e}}"
+
+ffmpeg -y -f concat -i filelist.txt -c copy "${2:-out.$ext}" 2>/dev/null

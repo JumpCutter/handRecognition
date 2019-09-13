@@ -17,10 +17,12 @@
 #include <iostream>
 #include <cstdio>
 #include <cmath>
+#include <deque>
+#include <numeric>
 
 #define PI 3.14159265
 #define THRESHOLD PI/4
-#define FRAMETHRESHOLD 2
+#define FRAMETHRESHOLD 5
 
 #include "mediapipe/framework/port/opencv_imgcodecs_inc.h"
 #include "mediapipe/framework/port/opencv_video_inc.h"
@@ -34,20 +36,20 @@
 #include "mediapipe/framework/formats/image_frame_opencv.h"
 #include "mediapipe/framework/subgraph.h"
 
-#include "mediapipe/examples/desktop/hand_tracking/graphconfig.h"
+#include "mediapipe/projects/hand_tracking/graphconfig.h"
 
 namespace mediapipe {
 
 static const char detection_graph[] =
-#include "mediapipe/examples/desktop/hand_tracking/hand_detection.inc"
+#include "mediapipe/projects/hand_tracking/hand_detection.inc"
     ;  // NOLINT(whitespace/semicolon)
 
 static const char landmark_graph[] =
-#include "mediapipe/examples/desktop/hand_tracking/hand_landmark.inc"
+#include "mediapipe/projects/hand_tracking/hand_landmark.inc"
     ;  // NOLINT(whitespace/semicolon)
 
 static const char renderer_graph[] =
-#include "mediapipe/examples/desktop/hand_tracking/hand_landmark.inc"
+#include "mediapipe/projects/hand_tracking/hand_landmark.inc"
     ;  // NOLINT(whitespace/semicolon)
 
 class HandDetectionSubgraph : public Subgraph {
@@ -130,23 +132,50 @@ std::string exOrFd(std::vector<NormalizedLandmark> ls, int finger){
     return extended ? " extended" : (folded ? " folded" : " neutral");
 }
 
+double getDistance(NormalizedLandmark a, NormalizedLandmark b){
+    double dx=a.x()-b.x(), dy=a.y()-b.y(), dz=a.z()-b.z();
+    return sqrt(dx*dx+dy+dy+dz*dz);
+}
+
+bool isThumbsDown(std::vector<NormalizedLandmark> ls){
+    bool pos = isFingerExtended(ls, 0) && \
+               isFingerFolded(ls, 1) && \
+               isFingerFolded(ls, 2) && \
+               isFingerFolded(ls, 3) && \
+               isFingerFolded(ls, 4);
+    
+    double thumbAngle = getAngle(ls[3], ls[4]);
+    bool point = PI/2-THRESHOLD < thumbAngle && thumbAngle < PI/2+THRESHOLD;
+    return pos && point;
+}
+
+bool isOkHand(std::vector<NormalizedLandmark> ls){
+    bool pos = !isFingerExtended(ls, 0) && \
+               !isFingerFolded(ls, 0) && \
+               !isFingerExtended(ls, 1) && \
+               !isFingerFolded(ls, 1) && \
+               isFingerExtended(ls, 2) && \
+               isFingerExtended(ls, 3) && \
+               isFingerExtended(ls, 4);
+    double pinkyAngle = getAngle(ls[19], ls[20]);
+    bool point = 3*PI/2-THRESHOLD < pinkyAngle && pinkyAngle < 3*PI/2+THRESHOLD;
+    bool close = getDistance(ls[4], ls[8]) < getDistance(ls[5], ls[8]);
+    return pos && point && close;
+}
 
 int getGesture(std::vector<NormalizedLandmark> ls){
-    bool isGesture = isFingerExtended(ls, 0) && \
-                     isFingerFolded(ls, 1) && \
-                     isFingerFolded(ls, 2) && \
-                     isFingerFolded(ls, 3) && \
-                     isFingerFolded(ls, 4);
+    if(isThumbsDown(ls)) return -1;
+    if(isOkHand(ls)) return 1;
+    return 0;            
+}
 
-    if (!isGesture) return 0;
-    // Check that thumb is pointing up and out of hand
-    if(!isExtended(ls[3], ls[4], ls[17], ls[5])) return 0;
-    double thumbAngle = getAngle(ls[3], ls[4]);
-    thumbAngle = mod(thumbAngle, 2*PI);
-    if(PI/2-THRESHOLD < thumbAngle && thumbAngle < PI/2+THRESHOLD) return 2;
-    if(3*PI/2-THRESHOLD < thumbAngle && thumbAngle < 3*PI/2+THRESHOLD) return 1;
+int getIndex(std::deque<int> deq, int x){
+    for(int i=0; i<deq.size(); i++){
+        if(deq[x] == i){
+            return deq.size() - i;
+        }
+    }
     return 0;
-                     
 }
 
 ::mediapipe::Status DetectHandGestures(char* filename) {
@@ -162,14 +191,15 @@ int getGesture(std::vector<NormalizedLandmark> ls){
     //ASSIGN_OR_RETURN(OutputStreamPoller rectpoller,
     //                  graph.AddOutputStreamPoller(
     //                     "hand_rect"));
-    ASSIGN_OR_RETURN(OutputStreamPoller poller,
-                      graph.AddOutputStreamPoller(
-                         "output_image"));
+    //ASSIGN_OR_RETURN(OutputStreamPoller poller,
+    //                  graph.AddOutputStreamPoller(
+    //                     "output_image"));
     RETURN_IF_ERROR(graph.StartRun({}));
     
     cv::VideoCapture video = cv::VideoCapture(filename);
     int i=0, j=0;
-    int smoothedstate=0, laststate=0, stateframes=0;
+    int smoothedstate=0;
+    std::deque<int> states;
     mediapipe::Packet packet;
     const char format[] = "output/frame_%03d.png";
     while(++i){
@@ -188,38 +218,38 @@ int getGesture(std::vector<NormalizedLandmark> ls){
             std::vector<NormalizedLandmark> landmarks = packet.Get<std::vector<NormalizedLandmark>>();
             int time =  packet.Timestamp().Value();
             int gesture = getGesture(landmarks);
-            if(laststate==gesture){
-                stateframes++;
-            } else {
-                laststate = gesture;
-                stateframes = 0;
-            }
-            if(laststate != smoothedstate && stateframes >= FRAMETHRESHOLD){
+            states.push_back(gesture);
+            if (states.size() > 10) states.pop_front();
+            double avg = std::accumulate(states.begin(), states.end(), 0.0);
+            int avgstate = avg>0.5? 1 : (avg<-0.5?-1:0);
+            
+            if(avgstate != smoothedstate){
+                time -= 15;
                 switch(smoothedstate){
-                    case 1: std::cout << time << " end up" << std::endl; break;
-                    case 2: std::cout << time << " end dn" << std::endl; break;
+                    case 1: std::cout << ' ' << time << " end up" << std::endl; break;
+                    case -1:std::cout << ' ' << time << " end dn" << std::endl; break;
                 }
-                switch(laststate){
-                    case 1: std::cout << time << " start up" << std::endl; break;
-                    case 2: std::cout << time << " start dn" << std::endl; break;
+                switch(avgstate){
+                    case 1: std::cout << ' ' << time << " start up" << std::endl; break;
+                    case -1:std::cout << ' ' << time << " start dn" << std::endl; break;
                 }
-                smoothedstate = laststate; 
+                smoothedstate = avgstate; 
             }
             switch (gesture){
                 case 1: std::cerr << time << "up" << std::endl; break;
-                case 2: std::cerr << time << "dn" << std::endl; break;
+                case -1: std::cerr << time << "dn" << std::endl; break;
                 //default: std::cerr << time << "no" << std::endl; break;
             }
             j++;
         }
-        if(poller.Next(&packet)){
+        /*if(poller.Next(&packet)){
             ImageFrame img = packet.Get<ImageFrame>();
             int time = packet.Timestamp().Value();
             char fname[256];
             sprintf(fname, format, time);
             cv::Mat mat = formats::MatView(&img);
             cv::imwrite(fname, mat);
-        }
+        }*/
 
     }
     RETURN_IF_ERROR(graph.CloseInputStream("input_image"));
