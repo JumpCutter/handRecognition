@@ -158,7 +158,7 @@ bool isOkHand(std::vector<NormalizedLandmark> ls){
     double pinkyAngle = mod(getAngle(ls[19], ls[20]), 2*PI);
     bool point = 3*PI/2-THRESHOLD < pinkyAngle && pinkyAngle < 3*PI/2+THRESHOLD;
     bool close = getDistance(ls[4], ls[8]) < getDistance(ls[9], ls[11]);
-    std::cout << pos << point << close << std::endl;
+    //std::cout << pos << point << close << std::endl;
     return pos && point && close;
 }
 
@@ -220,25 +220,26 @@ int getIndex(std::deque<int> deq, int x){
             states.push_back(gesture);
             if (states.size() > 10) states.pop_front();
             double avg = std::accumulate(states.begin(), states.end(), 0.0);
+            avg /= states.size();
             int avgstate = avg>0.5? 1 : (avg<-0.5?-1:0);
             
             if(avgstate != smoothedstate){
-                time -= 15;
+                //time -= 15;
                 switch(smoothedstate){
-                    case 1: std::cout << ' ' << time << " end up" << std::endl; break;
-                    case -1:std::cout << ' ' << time << " end dn" << std::endl; break;
+                    case 1: std::cout << time << " end up" << std::endl; break;
+                    case -1:std::cout << time << " end dn" << std::endl; break;
                 }
                 switch(avgstate){
-                    case 1: std::cout << ' ' << time << " start up" << std::endl; break;
-                    case -1:std::cout << ' ' << time << " start dn" << std::endl; break;
+                    case 1: std::cout << time << " start up" << std::endl; break;
+                    case -1:std::cout << time << " start dn" << std::endl; break;
                 }
                 smoothedstate = avgstate; 
             }
-            switch (gesture){
+            /*switch (gesture){
                 case 1: std::cerr << time << "up" << std::endl; break;
                 case -1: std::cerr << time << "dn" << std::endl; break;
                 default: std::cerr << time << "no" << std::endl; break;
-            }
+            }*/
             j++;
         }
         if(poller.Next(&packet)){

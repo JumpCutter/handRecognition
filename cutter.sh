@@ -2,22 +2,24 @@
 
 ext=${1##*.}
 vidname=0
-frame=0
 fps=`ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p"`
+frame=$(echo "0/$fps" | bc -l | sed 's/^\./0\./')
 
 mkdir -p tmpvids
-echo "" > filelist.txt
+rm -f filelist.txt
 
 ./handrecog $1 | \
 while read fr event gest; do
-    if [ $event = 'end' ]; then
+    [ -n $fr ] || continue
+    echo $fr $event $gest
+    if [ $event == 'end' ]; then
         frame=$fr
-    elif [ $gest = 'up' ]; then
+    elif [ $gest == 'up' ]; then
         #echo $frame $fr $fps
         s=$(echo "$frame/$fps" | bc -l | sed 's/^\./0\./')
         e=$(echo "$fr   /$fps" | bc -l | sed 's/^\./0\./')
         #echo $s $e
-        ffmpeg -y -i $1 -ss $s -to $e -c copy tmpvids/$vidname.$ext 2>/dev/null
+        ffmpeg -y -i $1 -ss $s -to $e tmpvids/$vidname.$ext 2>/dev/null
         echo "file 'tmpvids/$vidname.$ext'" >> filelist.txt
         vidname=$((vidname+1))
     fi
