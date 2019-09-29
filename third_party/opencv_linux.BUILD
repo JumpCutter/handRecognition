@@ -21,8 +21,8 @@ cc_library(
             "lib/libopencv_videoio.so",
         ],
     ),
-    hdrs = glob(["include/opencv2/**/*.h*"]),
-    includes = ["include/opencv2/"],
+    hdrs = glob(["include/opencv4/**/*.h*"]),
+    includes = ["include/opencv4/"],
     linkstatic = 1,
     visibility = ["//visibility:public"],
 )
