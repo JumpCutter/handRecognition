@@ -26,3 +26,4 @@ while read fr event gest; do
 done
 
 ffmpeg -y -f concat -i filelist.txt -c copy "${2:-out.$ext}" 2>/dev/null
+mv "${2:-out.$ext}" "$1"
