@@ -1,5 +1,15 @@
 # The bazelrc file for MediaPipe OSS.
 
+# Docker Sandbox Mode
+# build:docker-sandbox --host_javabase=<...>
+# build:docker-sandbox --javabase=<...>
+# build:docker-sandbox --crosstool_top=<...>
+# build:docker-sandbox --experimental_docker_image=<...>
+# build:docker-sandbox --spawn_strategy=docker --strategy=Javac=docker --genrule_strategy=docker
+# build:docker-sandbox --define=EXECUTOR=remote
+# build:docker-sandbox --experimental_docker_verbose
+# build:docker-sandbox --experimental_enable_docker_sandbox
+
 # Basic build settings
 build --jobs 128
 build --define='absl=1'

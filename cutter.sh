@@ -1,4 +1,6 @@
-#!/usr/bin/env sh
+#!/bin/sh
+# #!/bin/bash
+# #!/usr/bin/env sh
 
 ext=${1##*.}
 vidname=0
@@ -12,9 +14,9 @@ rm -f filelist.txt
 while read fr event gest; do
     [ -n $fr ] || continue
     echo $fr $event $gest
-    if [ $event == 'end' ]; then
+    if [ "$event" == 'end' ]; then
         frame=$fr
-    elif [ $gest == 'up' ]; then
+    elif [ "$gest" == 'up' ]; then
         #echo $frame $fr $fps
         s=$(echo "$frame/$fps" | bc -l | sed 's/^\./0\./')
         e=$(echo "$fr   /$fps" | bc -l | sed 's/^\./0\./')
@@ -27,3 +29,4 @@ done
 
 ffmpeg -y -f concat -i filelist.txt -c copy "${2:-out.$ext}" 2>/dev/null
 mv "${2:-out.$ext}" "$1"
+chmod a+wx "$1"
