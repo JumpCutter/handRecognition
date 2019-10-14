@@ -23,6 +23,7 @@
 #define PI 3.14159265
 #define THRESHOLD PI/4
 #define FRAMETHRESHOLD 5
+#define COUNTTHRESHOLD 0.3
 
 #include "mediapipe/framework/port/opencv_imgcodecs_inc.h"
 #include "mediapipe/framework/port/opencv_video_inc.h"
@@ -221,7 +222,7 @@ int getIndex(std::deque<int> deq, int x){
             if (states.size() > 10) states.pop_front();
             double avg = std::accumulate(states.begin(), states.end(), 0.0);
             avg /= states.size();
-            int avgstate = avg>0.5? 1 : (avg<-0.5?-1:0);
+            int avgstate = avg>COUNTTHRESHOLD? 1 : (avg<-COUNTTHRESHOLD?-1:0);
             
             if(avgstate != smoothedstate){
                 //time -= 15;
