@@ -10,7 +10,7 @@ frame=$(echo "0/$fps" | bc -l | sed 's/^\./0\./')
 tempdir=$(mktemp -d tmpvids.XXXXXX)
 trap 'rm -rf "$tempdir"' 0 1 2 9 15
 
-cat values | \
+./handrecog $1 | \
 while read fr event gest; do 
     [ -n $fr ] || continue
     echo $fr $event $gest "$(echo $fr/$fps | bc)s"
