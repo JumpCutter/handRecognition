@@ -19,6 +19,7 @@
 #include <cmath>
 #include <deque>
 #include <numeric>
+#include <cstdlib>
 
 #define PI 3.14159265
 #define THRESHOLD PI/4
@@ -202,6 +203,10 @@ int getIndex(std::deque<int> deq, int x){
     std::deque<int> states;
     mediapipe::Packet packet;
     const char format[] = "output/frame_%03d.png";
+    char *thresholdvar = getenv("COUNT_THRESHOLD");
+    double count_thresh = atof(thresholdvar);
+    if(count_thresh==0.0) count_thresh = COUNTTHRESHOLD;
+    
     while(++i){
         cv::Mat inmatrix;// = cv::imread("test.png");
         if(!video.read(inmatrix)) break;
@@ -222,7 +227,7 @@ int getIndex(std::deque<int> deq, int x){
             if (states.size() > 10) states.pop_front();
             double avg = std::accumulate(states.begin(), states.end(), 0.0);
             avg /= states.size();
-            int avgstate = avg>COUNTTHRESHOLD? 1 : (avg<-COUNTTHRESHOLD?-1:0);
+            int avgstate = avg>count_thresh ? 1 : (avg< -count_thresh ?-1:0);
             
             if(avgstate != smoothedstate){
                 //time -= 15;
