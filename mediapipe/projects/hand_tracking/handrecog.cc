@@ -256,6 +256,9 @@ int getIndex(std::deque<int> deq, int x){
             cv::Mat mat = formats::MatView(&img);
             cv::imwrite(fname, mat);
         }
+        if(!(i%100)){
+            std::cerr << i << std::endl;
+        }
 
     }
     MP_RETURN_IF_ERROR(graph.CloseInputStream("input_image"));

@@ -7,6 +7,10 @@ vidname=0
 fps=`ffmpeg -i $1 2>&1 | sed -n "s/.*, \(.*\) fp.*/\1/p"`
 frame=$(echo "0/$fps" | bc -l | sed 's/^\./0\./')
 
+framecount=$(ffmpeg -i $1 -map 0:v:0 -c copy -f null - 2>&1 | \
+        grep frame | sed -e 's/frame=\W*\([0-9]*\).*/\1/')
+echo $framecount 1>&2
+
 tempdir=$(mktemp -d tmpvids.XXXXXX)
 trap 'rm -rf "$tempdir"' 0 1 2 9 15
 
