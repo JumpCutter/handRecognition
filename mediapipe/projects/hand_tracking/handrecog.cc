@@ -25,6 +25,7 @@
 #define THRESHOLD PI/4
 #define FRAMETHRESHOLD 5
 #define COUNTTHRESHOLD 0.3
+#define FRAMERETURN 100
 
 #include "mediapipe/framework/port/opencv_imgcodecs_inc.h"
 #include "mediapipe/framework/port/opencv_video_inc.h"
@@ -206,6 +207,10 @@ int getIndex(std::deque<int> deq, int x){
     char *thresholdvar = getenv("COUNT_THRESHOLD");
     double count_thresh = atof(thresholdvar);
     if(count_thresh==0.0) count_thresh = COUNTTHRESHOLD;
+    // TODO: move there whereever makes sense
+    char *framevar = getenv("FRAME_RETURN");
+    int frame_ret = atoi(framevar);
+    if(frame_ret==0) frame_ret = FRAMERETURN;
     
     while(++i){
         cv::Mat inmatrix;// = cv::imread("test.png");
@@ -257,7 +262,7 @@ int getIndex(std::deque<int> deq, int x){
             cv::Mat mat = formats::MatView(&img);
             cv::imwrite(fname, mat);
         }
-        if(!(i%100)){
+        if(!(i%frame_ret)){
             std::cerr << "Progress: " << i << std::endl;
         }
 
