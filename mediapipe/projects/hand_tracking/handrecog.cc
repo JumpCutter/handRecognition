@@ -258,7 +258,7 @@ int getIndex(std::deque<int> deq, int x){
             cv::imwrite(fname, mat);
         }
         if(!(i%100)){
-            std::cerr << i << std::endl;
+            std::cerr << "Progress: " << i << std::endl;
         }
 
     }
