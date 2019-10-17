@@ -223,6 +223,7 @@ int getIndex(std::deque<int> deq, int x){
             std::vector<NormalizedLandmark> landmarks = packet.Get<std::vector<NormalizedLandmark>>();
             int time =  packet.Timestamp().Value();
             int gesture = getGesture(landmarks);
+            // std::cout << time << " " << gesture << "\n";
             states.push_back(gesture);
             if (states.size() > 10) states.pop_front();
             double avg = std::accumulate(states.begin(), states.end(), 0.0);

@@ -15,8 +15,8 @@ tempdir=$(mktemp -d tmpvids.XXXXXX)
 trap 'rm -rf "$tempdir"' 0 1 2 9 15
 
 ./handrecog $1 | \
-while read fr event gest; do 
-    [ -n $fr ] || continue
+while read fr event gest; do
+    [ -n "$fr" ] || continue
     echo $fr $event $gest "$(echo $fr/$fps | bc)s"
     if [ "$event" == 'end' ]; then
         frame=$fr
@@ -32,4 +32,5 @@ while read fr event gest; do
 done
 
 ffmpeg -nostdin -y -f concat -i $tempdir/filelist.txt -c copy $1 2>/dev/null
+# ffmpeg -nostdin -y -f concat -i $tempdir/filelist.txt -c copy "/app/test2.mp4" 2>/dev/null
 # chmod a+wx "$1"
