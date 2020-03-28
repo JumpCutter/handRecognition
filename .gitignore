@@ -7,3 +7,4 @@ bazel-out
 bazel-testlogs
 mediapipe/MediaPipe.xcodeproj
 mediapipe/MediaPipe.tulsiproj/*.tulsiconf-user
+**/__pycache__/**
